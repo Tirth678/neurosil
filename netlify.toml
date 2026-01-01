@@ -1,0 +1,39 @@
+# Build settings
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+# Security Headers
+[[headers]]
+  for = "/*"
+  [headers.values]
+    # Force HTTPS
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
+    
+    # Prevent clickjacking
+    X-Frame-Options = "DENY"
+    
+    # Prevent MIME type sniffing
+    X-Content-Type-Options = "nosniff"
+    
+    # XSS Protection
+    X-XSS-Protection = "1; mode=block"
+    
+    # Referrer Policy
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    
+    # Content Security Policy
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://api.anthropic.com https://my.spline.design; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data: https://cdnjs.cloudflare.com; connect-src 'self' https://api.anthropic.com https://firestore.googleapis.com https://*.firebaseio.com https://identitytoolkit.googleapis.com; frame-src 'self' https://my.spline.design; object-src 'none';"
+    
+    # Permissions Policy
+    Permissions-Policy = "geolocation=(), microphone=(), camera=(), payment=(), usb=()"
+    
+    # Remove X-Powered-By
+    X-Powered-By = ""
+
+# Redirect HTTP to HTTPS
+[[redirects]]
+  from = "http://shimmering-donut-e74efc.netlify.app/*"
+  to = "https://shimmering-donut-e74efc.netlify.app/:splat"
+  status = 301
+  force = true
