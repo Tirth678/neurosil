@@ -5,16 +5,48 @@ import { useEffect, useRef } from 'react';
 // Extend Window interface for VANTA
 declare global {
   interface Window {
-    VANTA: any;
-    THREE: any;
+    VANTA: {
+      BIRDS: (options: Record<string, unknown>) => {
+        destroy: () => void;
+      };
+    };
+    THREE: unknown;
   }
 }
 
 export default function Home() {
   const vantaRef = useRef<HTMLDivElement>(null);
-  const vantaEffect = useRef<any>(null);
+  const vantaEffect = useRef<{ destroy: () => void } | null>(null);
 
   useEffect(() => {
+    let isMounted = true;
+
+    const initVanta = () => {
+      if (vantaRef.current && window.VANTA && !vantaEffect.current) {
+        vantaEffect.current = window.VANTA.BIRDS({
+          el: vantaRef.current,
+          mouseControls: true,
+          touchControls: true,
+          gyroControls: false,
+          minHeight: 200.00,
+          minWidth: 200.00,
+          scale: 1.00,
+          scaleMobile: 1.00,
+          backgroundColor: 0xffffff,
+          color1: 0x3b82f6,
+          color2: 0x6366f1,
+          colorMode: "lerp",
+          birdSize: 1.20,
+          wingSpan: 20.00,
+          speedLimit: 5.00,
+          separation: 50.00,
+          alignment: 50.00,
+          cohesion: 50.00,
+          quantity: 4.00
+        });
+      }
+    };
+
     if (!vantaEffect.current) {
       // Load Three.js
       const threeScript = document.createElement('script');
@@ -22,34 +54,16 @@ export default function Home() {
       threeScript.async = true;
       
       threeScript.onload = () => {
+        if (!isMounted) return;
         // Load Vanta Birds after Three.js is loaded
         const vantaScript = document.createElement('script');
         vantaScript.src = 'https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.birds.min.js';
         vantaScript.async = true;
         
         vantaScript.onload = () => {
-          // Initialize Vanta effect
-          vantaEffect.current = window.VANTA.BIRDS({
-            el: vantaRef.current,
-            mouseControls: true,
-            touchControls: true,
-            gyroControls: false,
-            minHeight: 200.00,
-            minWidth: 200.00,
-            scale: 1.00,
-            scaleMobile: 1.00,
-            backgroundColor: 0xffffff,
-            color1: 0x3b82f6,
-            color2: 0x6366f1,
-            colorMode: "lerp",
-            birdSize: 1.20,
-            wingSpan: 20.00,
-            speedLimit: 5.00,
-            separation: 50.00,
-            alignment: 50.00,
-            cohesion: 50.00,
-            quantity: 4.00
-          });
+          if (isMounted) {
+            initVanta();
+          }
         };
         
         document.body.appendChild(vantaScript);
@@ -60,8 +74,10 @@ export default function Home() {
 
     // Cleanup function
     return () => {
-      if (vantaEffect.current && typeof vantaEffect.current.destroy === 'function') {
+      isMounted = false;
+      if (vantaEffect.current) {
         vantaEffect.current.destroy();
+        vantaEffect.current = null;
       }
     };
   }, []);
